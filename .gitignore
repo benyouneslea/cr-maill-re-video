@@ -1,2 +1,7 @@
 work/*.tmp
 *.log
+work/frames/
+work/clips/
+work/__pycache__/
+work/video_only.mp4
+work/concat.txt
