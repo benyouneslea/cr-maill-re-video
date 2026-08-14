@@ -22,6 +22,21 @@ def photo_path(n):
 
 def compose_photo_frame(n, out_png):
     src = photo_path(n)
+    if src.lower().endswith(('.mp4', '.mov')):
+        still = os.path.join(FRAMES, f'_vidframe_{n}.jpg')
+        if not os.path.exists(still):
+            dur_probe = subprocess.run(
+                ['ffprobe', '-v', 'error', '-show_entries', 'format=duration',
+                 '-of', 'default=noprint_wrappers=1:nokey=1', src],
+                capture_output=True, text=True)
+            try:
+                d = float(dur_probe.stdout.strip())
+            except ValueError:
+                d = 2.0
+            ts = min(1.0, max(d / 3, 0.2))
+            subprocess.run(['ffmpeg', '-y', '-ss', str(ts), '-i', src, '-frames:v', '1', still],
+                            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+        src = still
     im = Image.open(src).convert('RGB')
     # background: cover-crop + blur
     bg = im.copy()
